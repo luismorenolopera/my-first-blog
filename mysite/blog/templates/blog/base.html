@@ -12,6 +12,7 @@
       <a href="{% url 'post_draft_list' %}" class="top-menu"><span class="glyphicon glyphicon-edit"></span></a>
       <p class="top-menu">Hello {{ user.username }}<small>(<a href="{% url 'django.contrib.auth.views.logout' %}">Log out</a>)</small></p>
     {% else %}
+      <a href="{% url 'user_new' %}" class="top-menu"><span class="glyphicon glyphicon-user"></span></a>
       <a href="{% url 'django.contrib.auth.views.login' %}" class="top-menu"><span class="glyphicon glyphicon-lock"></span></a>
     {% endif %}
       <h1><a href="{% url 'blog.views.post_list' %}">Django Blog</a></h1>

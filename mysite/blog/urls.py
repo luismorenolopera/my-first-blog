@@ -17,4 +17,5 @@ urlpatterns = [
         views.comment_approve, name='comment_approve'),
     url(r'^comment/(?P<pk>\d+)/remove/$',
         views.comment_remove, name='comment_remove'),
+    url(r'^user/new/$', views.user_new, name='user_new'),
 ]

@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from .models import Post, Comment
-from .forms import PostForm, CommentForm
+from .forms import PostForm, CommentForm, UserForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth import login, authenticate
 
 
 def post_list(request):
@@ -92,3 +94,18 @@ def comment_remove(request, pk):
     post_pk = comment.post.pk
     comment.delete()
     return redirect('blog.views.post_detail', pk=post_pk)
+
+
+def user_new(request):
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        form = UserForm(request.POST)
+        if form.is_valid():
+            new_user = User.objects.create_user(**form.cleaned_data)
+            user = authenticate(username=username, password=password)
+            login(request, user)
+            return redirect('blog.views.post_list')
+    else:
+        form = UserForm()
+    return render(request, 'registration/user_new.html', {'form': form})

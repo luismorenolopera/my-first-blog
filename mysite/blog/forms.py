@@ -1,6 +1,6 @@
 from django import forms
-
 from .models import Post, Comment
+from django.contrib.auth.models import User
 
 
 class PostForm(forms.ModelForm):
@@ -15,3 +15,13 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ('author', 'text',)
+
+
+class UserForm(forms.ModelForm):
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email', 'password')
+        widgets = {
+            'password': forms.PasswordInput(),
+            }
