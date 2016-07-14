@@ -28,8 +28,10 @@ def post_new(request):
             post.save()
             return redirect('post_detail', pk=post.pk)
     else:
+        message = "New post"
         form = PostForm()
-    return render(request, 'blog/post_edit.html', {'form': form})
+    return render(request, 'blog/base_form.html', {'form': form,
+                                                   'message': message})
 
 
 @login_required
@@ -41,10 +43,12 @@ def post_edit(request, pk):
             post = form.save(commit=False)
             post.author = request.user
             post.save()
-            return redirect('blog.views.post_detail', pk=post.pk)
+            return redirect('post_detail', pk=post.pk)
     else:
+        message = "Edit post"
         form = PostForm(instance=post)
-    return render(request, 'blog/post_edit.html', {'form': form})
+    return render(request, 'blog/base_form.html', {'form': form,
+                                                   'message': message})
 
 
 @login_required
@@ -77,8 +81,10 @@ def add_comment_to_post(request, pk):
             comment.save()
             return redirect('post_detail', pk=post.pk)
     else:
+        message = "Add comment"
         form = CommentForm()
-    return render(request, 'blog/add_comment_to_post.html', {'form': form})
+    return render(request, 'blog/base_form.html', {'form': form,
+                                                   'message': message})
 
 
 @login_required
@@ -107,5 +113,7 @@ def user_new(request):
             login(request, user)
             return redirect('post_list')
     else:
+        message = "New user"
         form = UserForm()
-    return render(request, 'registration/user_new.html', {'form': form})
+    return render(request, 'blog/base_form.html', {'form': form,
+                                                   'message': message})
