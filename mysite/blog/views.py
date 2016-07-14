@@ -26,7 +26,7 @@ def post_new(request):
             post = form.save(commit=False)
             post.author = request.user
             post.save()
-            return redirect('blog.views.post_detail', pk=post.pk)
+            return redirect('post_detail', pk=post.pk)
     else:
         form = PostForm()
     return render(request, 'blog/post_edit.html', {'form': form})
@@ -57,14 +57,14 @@ def post_draft_list(request):
 def post_publish(request, pk):
     post = get_object_or_404(Post, pk=pk)
     post.publish()
-    return redirect('blog.views.post_detail', pk=pk)
+    return redirect('post_detail', pk=pk)
 
 
 @login_required
 def post_remove(request, pk):
     post = get_object_or_404(Post, pk=pk)
     post.delete()
-    return redirect('blog.views.post_list')
+    return redirect('post_list')
 
 
 def add_comment_to_post(request, pk):
@@ -75,7 +75,7 @@ def add_comment_to_post(request, pk):
             comment = form.save(commit=False)
             comment.post = post
             comment.save()
-            return redirect('blog.views.post_detail', pk=post.pk)
+            return redirect('post_detail', pk=post.pk)
     else:
         form = CommentForm()
     return render(request, 'blog/add_comment_to_post.html', {'form': form})
@@ -85,7 +85,7 @@ def add_comment_to_post(request, pk):
 def comment_approve(request, pk):
     comment = get_object_or_404(Comment, pk=pk)
     comment.approve()
-    return redirect('blog.views.post_detail', pk=comment.post.pk)
+    return redirect('post_detail', pk=comment.post.pk)
 
 
 @login_required
@@ -93,7 +93,7 @@ def comment_remove(request, pk):
     comment = get_object_or_404(Comment, pk=pk)
     post_pk = comment.post.pk
     comment.delete()
-    return redirect('blog.views.post_detail', pk=post_pk)
+    return redirect('post_detail', pk=post_pk)
 
 
 def user_new(request):
@@ -105,7 +105,7 @@ def user_new(request):
             new_user = User.objects.create_user(**form.cleaned_data)
             user = authenticate(username=username, password=password)
             login(request, user)
-            return redirect('blog.views.post_list')
+            return redirect('post_list')
     else:
         form = UserForm()
     return render(request, 'registration/user_new.html', {'form': form})
