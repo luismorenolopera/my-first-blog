@@ -5,17 +5,20 @@ from .forms import PostForm, CommentForm, UserForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate
+from django.views.generic import ListView, DetailView
 
 
-def post_list(request):
-    posts = Post.objects.filter(
-        published_date__lte=timezone.now()).order_by('-published_date')
-    return render(request, 'blog/post_list.html', {'posts': posts})
+class PostList(ListView):
+    model = Post
 
 
-def post_detail(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    return render(request, 'blog/post_detail.html', {'post': post})
+class PostDetail(DetailView):
+    model = Post
+
+    def get_context_data(self, **kwargs):
+        context = super(PostDetail, self).get_context_data(**kwargs)
+        context['comments'] = Comment.objects.all()
+        return context
 
 
 @login_required
