@@ -4,8 +4,10 @@ from .models import Post, Comment
 from .forms import PostForm, CommentForm, UserForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, REDIRECT_FIELD_NAME
 from django.views.generic import ListView, DetailView
+from django.views.generic.edit import CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 class PostList(ListView):
@@ -21,20 +23,16 @@ class PostDetail(DetailView):
         return context
 
 
-@login_required
-def post_new(request):
-    if request.method == "POST":
-        form = PostForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.author = request.user
-            post.save()
-            return redirect('post_detail', pk=post.pk)
-    else:
-        message = "New post"
-        form = PostForm()
-    return render(request, 'blog/base_form.html', {'form': form,
-                                                   'message': message})
+class PostCreate(LoginRequiredMixin, CreateView):
+    model = Post
+    fields = ['title', 'text']
+    template_name = 'blog/base_form.html'
+    login_url = '/accounts/login/'
+    redirect_field_name = REDIRECT_FIELD_NAME
+
+    def form_valid(self, form):
+        form.instance.author_id = self.request.user.id
+        return super(PostCreate, self).form_valid(form)
 
 
 @login_required
