@@ -1,12 +1,13 @@
 from django.conf.urls import url
 from . import views
-from blog.views import PostList, PostDetail, PostCreate
+from blog.views import PostList, PostDetail, PostCreate, PostUpdate
 
 urlpatterns = [
     url(r'^$', PostList.as_view(), name='post_list'),
     url(r'^post/(?P<pk>[0-9]+)/$', PostDetail.as_view(), name='post_detail'),
     url(r'^post/new/$', PostCreate.as_view(), name='post_new'),
-    url(r'^post/(?P<pk>[0-9]+)/edit/$', views.post_edit, name='post_edit'),
+    url(r'^post/(?P<pk>[0-9]+)/edit/$', PostUpdate.as_view(),
+        name='post_edit'),
     url(r'^drafts/$', views.post_draft_list, name='post_draft_list'),
     url(r'^post/(?P<pk>\d+)/publish/$',
         views.post_publish, name='post_publish'),

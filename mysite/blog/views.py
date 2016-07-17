@@ -1,13 +1,13 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.utils import timezone
-from .models import Post, Comment
-from .forms import PostForm, CommentForm, UserForm
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, REDIRECT_FIELD_NAME
-from django.views.generic import ListView, DetailView
-from django.views.generic.edit import CreateView
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import ListView, DetailView
+from django.views.generic.edit import CreateView, UpdateView
+
+from .forms import PostForm, CommentForm, UserForm
+from .models import Post, Comment
 
 
 class PostList(ListView):
@@ -35,21 +35,12 @@ class PostCreate(LoginRequiredMixin, CreateView):
         return super(PostCreate, self).form_valid(form)
 
 
-@login_required
-def post_edit(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    if request.method == "POST":
-        form = PostForm(request.POST, instance=post)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.author = request.user
-            post.save()
-            return redirect('post_detail', pk=post.pk)
-    else:
-        message = "Edit post"
-        form = PostForm(instance=post)
-    return render(request, 'blog/base_form.html', {'form': form,
-                                                   'message': message})
+class PostUpdate(LoginRequiredMixin, UpdateView):
+    model = Post
+    fields = ['title', 'text']
+    template_name = 'blog/base_form.html'
+    login_url = '/accounts/login/'
+    redirect_field_name = REDIRECT_FIELD_NAME
 
 
 @login_required
