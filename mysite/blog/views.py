@@ -1,10 +1,12 @@
-from django.contrib.auth import login, authenticate, REDIRECT_FIELD_NAME
+from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.core.urlresolvers import reverse_lazy
+
 
 from .forms import PostForm, CommentForm, UserForm
 from .models import Post, Comment
@@ -23,24 +25,44 @@ class PostDetail(DetailView):
         return context
 
 
-class PostCreate(LoginRequiredMixin, CreateView):
+class PostCreate(PermissionRequiredMixin, CreateView):
     model = Post
+    permission_required = 'blog.add_post'
     fields = ['title', 'text']
     template_name = 'blog/base_form.html'
-    login_url = '/accounts/login/'
-    redirect_field_name = REDIRECT_FIELD_NAME
+    login_url = '/access_denied/'
 
     def form_valid(self, form):
         form.instance.author_id = self.request.user.id
         return super(PostCreate, self).form_valid(form)
 
+    def get_context_data(self, **kwargs):
+        context = super(PostCreate, self).get_context_data(**kwargs)
+        context['message'] = 'New Post'
+        return context
 
-class PostUpdate(LoginRequiredMixin, UpdateView):
+
+class PostUpdate(PermissionRequiredMixin, UpdateView):
     model = Post
+    permission_required = 'blog.change_post'
     fields = ['title', 'text']
     template_name = 'blog/base_form.html'
-    login_url = '/accounts/login/'
-    redirect_field_name = REDIRECT_FIELD_NAME
+    login_url = '/access_denied/'
+
+    def get_context_data(self, **kwargs):
+        context = super(PostUpdate, self).get_context_data(**kwargs)
+        context['message'] = 'Edit Post'
+        return context
+
+
+class PostDelete(PermissionRequiredMixin, DeleteView):
+    model = Post
+    permission_required = 'blog.delete_post'
+    login_url = '/access_denied/'
+    success_url = reverse_lazy('post_list')
+
+    def get(self, *args, **kwargs):
+        return self.post(*args, **kwargs)
 
 
 @login_required
@@ -56,13 +78,6 @@ def post_publish(request, pk):
     return redirect('post_detail', pk=pk)
 
 
-@login_required
-def post_remove(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    post.delete()
-    return redirect('post_list')
-
-
 def add_comment_to_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.method == "POST":
@@ -73,10 +88,9 @@ def add_comment_to_post(request, pk):
             comment.save()
             return redirect('post_detail', pk=post.pk)
     else:
-        message = "Add comment"
         form = CommentForm()
     return render(request, 'blog/base_form.html', {'form': form,
-                                                   'message': message})
+                                                   'message': 'New Comment'})
 
 
 @login_required
@@ -100,12 +114,15 @@ def user_new(request):
         password = request.POST['password']
         form = UserForm(request.POST)
         if form.is_valid():
-            new_user = User.objects.create_user(**form.cleaned_data)
+            User.objects.create_user(**form.cleaned_data)
             user = authenticate(username=username, password=password)
             login(request, user)
             return redirect('post_list')
     else:
-        message = "New user"
         form = UserForm()
     return render(request, 'blog/base_form.html', {'form': form,
-                                                   'message': message})
+                                                   'message': 'New User'})
+
+
+def access_denied(request):
+    return render(request, 'blog/access_denied.html')
